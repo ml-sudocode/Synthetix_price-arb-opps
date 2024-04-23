@@ -52,6 +52,7 @@ Run this Dune query to pull the skewScale over your chosen period: https://dune.
 
 The query looks to a table synthetix_optimism.PerpsV2MarketSettings_evt_ParameterUpdated, which contains indexed events from when parameters are updated (skewscale, maxmarketvalue, maker/taker fee, etc.). It filters those events for skewScale changes and then further filters based on the markets/times entered.
 
+<!-- what about for v3 -->
 
 # Data Preparation
 
@@ -65,7 +66,9 @@ The query looks to a table synthetix_optimism.PerpsV2MarketSettings_evt_Paramete
 * Sometimes the data extracted from Synthetix, Pyth and Binance are slightly misaligned, for example there may be a few hours more data from Synthetix compared to Pyth or Binance. To avoid errors in calculation (i.e. overestimating opportunities), we want to delete the extra data in the Synthetix trades file. 
 Take the first and last timestamps from Pyth and Binance files and insert into the Trades spreadsheet. (As the Binance timestamp is in milliseconds rather than seconds, divide the timestamp by 1000). 
 For each start time, choose the later time, i.e. `Start = max(Pyth-start,Binance-start)`. For each end time, choose the earlier time, i.e. `End = min(Pyth-start,Binance-start)`. 
-Create a new column on the right with the formula `=IF(AND(C2>=P$5,C2<=P$6),"include","DELETE")`. This will show you which rows you need to delete from the Trades file. Delete those rows now. 
+Create a new column on the right with the formula `=IF(AND(C2>=$Start,C2<=$End),"include","DELETE")`. This will show you which rows you need to delete from the Trades file. Delete those rows now. 
+
+* (Only) for data extract for v3, change the heading "skew" to "net_skew".
 
 * Add a new column at the end titled "skewscale". 
 
@@ -77,6 +80,8 @@ To populate the new column, you can either eyeball it or use a series of equatio
 If you use a series of equations, here's what you can do: 
 - paste the skew data from the Dune output into the Trades file. Delete "UTC" from the start and end times. Convert the format of those date cells to Date (hit Ctrl+1, then select Date). Use the timestamp formula to convert the dates into timestamps (`=([date]-DATE(1970,1,1))*86400`).
 - create a new column titled skewscale and write a formula to automatically populate the whole column (e.g. where skewscale updated one time during the chosen time period, `=IF(([trade timestamp]]<=[end of first skew]]),[skewscale for first period]],[skewscale for second period]])`)
+
+<!-- what about for v3 -->
 
 * Save the file! 
 

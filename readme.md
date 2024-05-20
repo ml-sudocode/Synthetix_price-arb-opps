@@ -63,10 +63,9 @@ The query looks to a table synthetix_optimism.PerpsV2MarketSettings_evt_Paramete
 
 * Adjust the timestamps so that they are comparable to the data available pulled from the oracle and the CEX, which are set to 5-minute periods: add a column after the "date as timestamp" column (column B) and insert this formula: `=MROUND(B2,300)`, which rounds down the timestamp to the start of each 5-min mark; apply this formula to the whole column. Name this column "date_rounded".
 
-* Sometimes the data extracted from Synthetix, Pyth and Binance are slightly misaligned, for example there may be a few hours more data from Synthetix compared to Pyth or Binance. To avoid errors in calculation (i.e. overestimating opportunities), we want to delete the extra data in the Synthetix trades file. 
-Take the first and last timestamps from Pyth and Binance files and insert into the Trades spreadsheet. (As the Binance timestamp is in milliseconds rather than seconds, divide the timestamp by 1000). 
-For each start time, choose the later time, i.e. `Start = max(Pyth-start,Binance-start)`. For each end time, choose the earlier time, i.e. `End = min(Pyth-start,Binance-start)`. 
-Create a new column on the right with the formula `=IF(AND(C2>=$Start,C2<=$End),"include","DELETE")`. This will show you which rows you need to delete from the Trades file. Delete those rows now. 
+* Sometimes the data extracted from Synthetix and Pyth are slightly misaligned, for example there may be a few hours more data from Synthetix compared to Pyth or Binance. To avoid errors in calculation (i.e. overestimating opportunities), we want to delete the extra data in the Synthetix trades file. 
+Take the first and last timestamps from Pyth file and insert into the Trades spreadsheet. Let's call the first timestamp "Pyth-start" and the last timestamp "Pyth-end".
+Create a new column on the right with the formula `=IF(AND(C2>=$Pyth-start,C2<=$Pyth-end),"include","DELETE")`. This will show you which rows you need to delete from the Trades file. Delete those rows now. 
 
 * (Only) for data extract for v3, change the heading "skew" to "net_skew".
 
@@ -76,10 +75,11 @@ Retrieve skewscale data using this Dune query mentioned in the Data Extraction s
 
 ![skewscale from Dune](/images/skewscale-dune.png)
 
-To populate the new column, you can either eyeball it or use a series of equations to make it easier.
+If skew didn't change at all during the period, just paste the skew value into this column. If skew changed, you can either eyeball it or use a series of equations to populate the column.
 If you use a series of equations, here's what you can do: 
-- paste the skew data from the Dune output into the Trades file. Delete "UTC" from the start and end times. Convert the format of those date cells to Date (hit Ctrl+1, then select Date). Use the timestamp formula to convert the dates into timestamps (`=([date]-DATE(1970,1,1))*86400`).
-- create a new column titled skewscale and write a formula to automatically populate the whole column (e.g. where skewscale updated one time during the chosen time period, `=IF(([trade timestamp]]<=[end of first skew]]),[skewscale for first period]],[skewscale for second period]])`)
+- create a table on the side with header columns: skew period, start, end, skew; rows: 1, 2, etc. 
+- paste the skew data from the Dune output into the table. Delete "UTC" from the start and end times. Convert the format of those date cells to Date (hit Ctrl+1, then select Date). Use the timestamp formula to convert the dates into timestamps (`=([date]-DATE(1970,1,1))*86400`).
+- in the skewscale column, write a formula to automatically populate the whole column (e.g. `=XLOOKUP(B2,[start of first skew period]:[start of last skew period],[first skew number]:[last skew number],,-1,)`). The -1 indicates a match mode of "Exact match or the next smaller item."
 
 <!-- what about for v3 -->
 

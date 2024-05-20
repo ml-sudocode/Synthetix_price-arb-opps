@@ -36,15 +36,15 @@ Note: this estimation excludes fees paid to Synthetix and the CEX; slippage enco
 
 See here for a [sample implementation](/data-extraction/pyth-query.ipynb) of the data call.
 
-(2) CEX price data, such as for Binance, can be accessed through the Binance API: https://fapi.binance.com. 
+(2) CEX price data is assumed to be the same as Pyth price data.
 
-See here for a [sample implementation](/data-extraction/binance-query.ipynb) of the data call.
+Note: this particular version of the repo assumes that the price of a token on a CEX is the same as the price provided by Pyth. This is a reasonable assumption as Pyth prices are pulled from a variety of inputs including CEXes. While it is better to pull the price from the CEX, there is no way for an individual to pull the price of a token on a CEX like Binance at a specific instant; the Binance API today only provides price info in discrete time periods (e.g. for a chosen 5-minute period, the Binance API provides the high/low/mid prices.) An earlier version of the repo (before 19 May 2024) assumed the price deviation to be the max difference between the calculated Synthetix price (incorporating Pyth price and skew data) and the min/max Binance price for the closest 5-minute time period, but that approach was determined to be less accurate.
 
 (3) Data updated when a trade is executed on Synthetix, i.e. skew, OI, price.
 
 <!-- TO DISCUSS -->
 
-_Note: While historical price data from CEX or Pyth tends to be continuous due to large volumes of trading, historical price and skew data on Synthetix are only updated when a trade is executed. Therefore, for the same time period, the data set for Synthetix is smaller than that of the other sources._
+_Note: While historical price data from Pyth tends to be continuous due to large volumes of trading, historical price and skew data on Synthetix are only updated when a trade is executed. Therefore, for the same time period, the data set for Synthetix is smaller than that of the other sources._
 
 (4) skewScale during the chosen period. It is manually determined by a risk management procedure and usually changed infrequently (weeks or months). 
 
@@ -92,29 +92,12 @@ When you open the csv file in excel, you will be asked if you want to convert th
 On Pyth price sheet, the default date format is "General." For our script to process this column, the date format needs to be changed to number format. 
 Select the dates in column A (titled "t"), then hit Ctrl+Shift+1 all together (it's a shortcut to format cells as Number).
 
-
-## For the Binance data
-
-When you open the csv file in excel, you will be asked if you want to convert the digits with E notation into scientific notation. Click Convert.
-
-(1) Some assets have such low prices that they are priced in units of 1000 on Binance; we need to adjust the prices so that they are consistent with Synthetix and Pyth data (which typically do not do this).
-
-Check the asset label column (column N). If it says something like 1000BONKUSDT or 1000PEPEUSDT, convert the high and low prices (columns C and D) to be consistent with Pyth and Trade data (i.e. divide the prices by 1000).
-
-(2) The default date format from the API is General, and is represented as a timestamp in milliseconds. We want the timestamp in Number format, and in seconds.
-
-First, select the dates and hit Ctrl+Shift+1 together (it's a shortcut to format cells as Number).
-
-Then, add a column after the "open_time" column (column A) and insert this formula: `=(A2/1000)`; apply this to the whole column. Label this new column "open_time_standardized".
-
-
 ## Rename all 3 adjusted files
 
 Rename the files with the ticker in the filename according to this template (case sensitive). 
 
 (1) [TICKER]-trades.csv
 (2) [TICKER]-pyth-prices.csv
-(3) [TICKER]-binance-prices.csv
 
 Note: if you selected more than one time period for each ticker, replace TICKER with TICKER-A, TICKER-B, etc. Make sure to enter TICKER-A or TICKER-B when prompted while the Python code is running. Alternatively, run the analysis with the files saved in different folders. 
 

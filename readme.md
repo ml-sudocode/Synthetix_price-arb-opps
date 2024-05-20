@@ -30,6 +30,8 @@ Note: this estimation excludes fees paid to Synthetix and the CEX; slippage enco
 
 3) Data analysis. Run this Python code, which will process the adjusted data files and output a file with a ranked list of the top 20 opportunities, and a file with all the opportunities in chronological order
 
+Note: the ranked list may display opportunities with the same timestamp due to the timestamp being rounded down to the nearest 5 seconds. These opportunities tend to be of similar size, with descending values, as traders gradually move the skew towards 0. This tends to happen for exceptionally large skews (~profit opps), as many traders don't absorb the entire skew for capital or risk reasons. When this happens, so as not to over-represent the available opportunity, eliminate all but the largest profit opportunity in each cluster.
+
 # Data Extraction
 
 (1) Oracle price data, such as for Pyth, can be accessed through the Pyth API: https://benchmarks.pyth.network/v1/. 

@@ -43,7 +43,10 @@ merged_data = pd.merge(tradesdata, pythdata, left_on='date_rounded', right_on='P
 print("\nMerged Data:")
 print(merged_data.head())
 
-# Calculate the profit opportunity in $, based on the formula Profit Opp = Deviation (%) * (Trade Price ($) * Net Skew) * 1/2; if we assume Pyth and Binance price are the same, then the formula simplifies to Profit Opp = Skew/SkewScale (%) * (Trade Price ($) * Net Skew) * 1/2
+# Calculate the profit opportunity in $, based on the formula Profit Opp = Deviation (%) * (Price ($) * Net Skew) * 1/2; if we assume Pyth and Binance price are the same, then the formula simplifies to Profit Opp = Skew/SkewScale (%) * (Price ($) * Net Skew) * 1/2
+
+## Note: The Price ($) chosen should be price on the CEX (or, the oracle price as a close proxy), but for simplicity here we use the actual trade price; the difference should not be significant for calculations meant only for approximation. 
+
 merged_data['abs_skew_skewscale'] = (merged_data['net_skew'] / merged_data['skewscale']).abs()
 merged_data['profit_opp_dollars'] = merged_data['abs_skew_skewscale'] * merged_data['trade_price'] * merged_data['net_skew'].abs() * 0.5
 
